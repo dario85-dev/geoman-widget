@@ -19,8 +19,14 @@
     "@angular/platform-browser": "~8.2.11",
     "@angular/platform-browser-dynamic": "~8.2.11",
     "@angular/router": "~8.2.11",
+    "@geoman-io/leaflet-geoman-free": "^2.5.0",
+    "@types/geojson": "^7946.0.7",
+    "@types/leaflet": "^1.5.12",
+    "@types/leaflet.pm": "^0.13.4",
+    "leaflet": "^1.6.0",
     "rxjs": "~6.4.0",
     "tslib": "^1.10.0",
+    "uuid": "^8.0.0",
     "zone.js": "~0.9.1"
   },
   "devDependencies": {
