@@ -2,6 +2,7 @@ import {Component, Input, OnInit, AfterViewInit, SimpleChanges} from '@angular/c
 import * as L from 'leaflet'
 import '@geoman-io/leaflet-geoman-free';
 import { v4 as uuidv4 } from "uuid";
+import intersect from '@turf/intersect'
 import {GeoJSON} from "geojson";
 import {IWmsLayer} from "../iwms-layer";
 
@@ -85,26 +86,22 @@ export class MapEditorComponent implements OnInit {
     this.map.on('pm:create', e => {
       console.log(e)
       this.map.removeLayer(e.layer)
-      this.drawedLayerGroup.addLayer(e.layer)
-      this.layerList.push(e.layer)
 
+      this.drawedLayerGroup.addLayer(e.layer);
 
-        e.layer.on('click', (e)=>{
-          console.log('click')
-          // @ts-ignore
-          this.drawedLayerGroup.pm.toggleEdit({
-            draggable: true});
-        })
       // @ts-ignore
-      this.drawedLayerGroup.pm.toggleEdit({
-        draggable: true});
+      let poly1 = this.borders.features[0]
+      let poly2 = e.layer.toGeoJSON().features[0]
+      let poly3 = intersect(poly1,poly2)
 
+      // @ts-ignore
+      L.polygon(poly3, {color: 'red'}).addTo(this.map);
 
     });
 
     this.map.on('pm:edit', e => {
-      console.log(e)
-      this.drawedLayerGroup.addLayer(e.target)
+
+
 
     });
 
@@ -153,23 +150,7 @@ export class MapEditorComponent implements OnInit {
     this.map.pm.enableDraw('Polygon', options);
   }
 
-  deletePolygon(){
-    // @ts-ignore
-    this.map.pm.toggleGlobalRemovalMode();
-  }
 
-
-  editPolygon(){
-    // @ts-ignore
-    //this.drawControl = this.map.pm.addControls(this.drawControlOptions);
-
-  }
-
-  StopEditPolygon(){
-
-    // @ts-ignore
-    this.map.pm.removeControl(this.drawControl);
-  }
 
   canToggle(){
     return (this.dragMode || this.editMode || this.deleteMode)
@@ -196,15 +177,6 @@ export class MapEditorComponent implements OnInit {
   }
 
 
-
-  setColorPolygon (){
-    // @ts-ignore
-    this.map.pm.setPathOptions({
-      color: this.pathColor,
-      fillColor: this.pathColor,
-      fillOpacity: 0.6,
-    });
-  }
 
   loadBorder(){
     if(this.borderLayerGroup && this.map){
