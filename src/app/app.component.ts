@@ -1,8 +1,7 @@
 import { Component } from '@angular/core';
-import * as L from 'Leaflet';
 
 import {GeoJSON, GeoJsonObject} from "geojson";
-import {WMSOptions} from "Leaflet";
+
 import {IWmsLayer} from "./iwms-layer";
 
 @Component({

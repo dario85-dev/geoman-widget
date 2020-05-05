@@ -1,7 +1,6 @@
 import {Component, Input, OnInit, AfterViewInit, SimpleChanges} from '@angular/core';
-import * as L from 'Leaflet'
+import * as L from 'leaflet'
 import '@geoman-io/leaflet-geoman-free';
-//import 'leaflet.pm';
 import { v4 as uuidv4 } from "uuid";
 import {GeoJSON} from "geojson";
 import {IWmsLayer} from "../iwms-layer";
@@ -17,16 +16,42 @@ export class MapEditorComponent implements OnInit {
 
   mapId: string;
   map: L.Map;
+
   wmsLayerGroup: L.LayerGroup = new L.LayerGroup<any>();
   jsonLayerGroup: L.LayerGroup = new L.LayerGroup<any>();
   //borderLayerGroup: GeoJSON;
   borderLayerGroup: L.LayerGroup = new L.LayerGroup<any>();
+  drawedLayerGroup: L.LayerGroup = new L.LayerGroup<any>();
+
+  layerList: L.Layer[] = [];
+
+  editMode: boolean = false;
+  dragMode: boolean = false
+  deleteMode: boolean = false
 
 
   @Input() borders: GeoJSON;
   @Input() shapes: GeoJSON;
   @Input() wmsLayers: IWmsLayer[];
 
+  pathColor: string = '#FFA500';
+  inFillOpacity: string = '0.4';
+
+
+  drawControl;
+
+  drawControlOptions: any = {
+    // position: 'topleft',
+    drawPolygon: false,
+    drawMarker: false,
+    drawCircleMarker: false,
+    drawPolyline: false,
+    drawRectangle: false,
+    drawCircle: false,
+    cutPolygon: false,
+    pinningOption: false,
+    snappingOption: false
+  };
 
 
   setMap() {
@@ -47,29 +72,48 @@ export class MapEditorComponent implements OnInit {
     this.wmsLayerGroup.addTo(this.map);
     this.jsonLayerGroup.addTo(this.map);
     this.borderLayerGroup.addTo(this.map);
+    this.drawedLayerGroup.addTo(this.map)
+
 
   }
 
   setDesignTool(){
     // @ts-ignore
-    L.PM.initialize({ optIn: true });
-    // @ts-ignore
-    this.map.pm.addControls({
-      position: 'topleft',
-      drawMarker: false,
-      drawCircleMarker: false,
-      drawPolyline: false,
-      drawRectangle: false,
-      drawCircle: false,
-      cutPolygon: false,
-      pinningOption: false,
-      snappingOption: false
+    L.PM.initialize();
+
+
+    this.map.on('pm:create', e => {
+      console.log(e)
+      this.map.removeLayer(e.layer)
+      this.drawedLayerGroup.addLayer(e.layer)
+      this.layerList.push(e.layer)
+
+
+        e.layer.on('click', (e)=>{
+          console.log('click')
+          // @ts-ignore
+          this.drawedLayerGroup.pm.toggleEdit({
+            draggable: true});
+        })
+      // @ts-ignore
+      this.drawedLayerGroup.pm.toggleEdit({
+        draggable: true});
+
+
+    });
+
+    this.map.on('pm:edit', e => {
+      console.log(e)
+      this.drawedLayerGroup.addLayer(e.target)
+
     });
 
   }
 
   constructor() {
+
     this.mapId = uuidv4();
+
   }
 
   ngOnInit() {
@@ -89,31 +133,84 @@ export class MapEditorComponent implements OnInit {
     this.loadWmss();
     this.setDesignTool();
 
-    // @ts-ignore
-    // this.map.pm.enableDraw('Polygon', {
-    //   snappable: true,
-    //   snapDistance: 20,
-    // });
-    var options = {
+
+
+  }
+
+  enableDrawer (){
+    let options = {
       templineStyle: {},
       hintlineStyle: {},
       pathOptions: {
         // add leaflet options for polylines/polygons
-        color: 'orange',
-        fillColor: 'green',
+        color: this.pathColor,
+        fillColor: this.pathColor,
+        fillOpacity: this.inFillOpacity,
       },
     };
 
-// enable drawing mode for shape - e.g. Poly or Line
     // @ts-ignore
     this.map.pm.enableDraw('Polygon', options);
+  }
 
+  deletePolygon(){
+    // @ts-ignore
+    this.map.pm.toggleGlobalRemovalMode();
+  }
+
+
+  editPolygon(){
+    // @ts-ignore
+    //this.drawControl = this.map.pm.addControls(this.drawControlOptions);
+
+  }
+
+  StopEditPolygon(){
+
+    // @ts-ignore
+    this.map.pm.removeControl(this.drawControl);
+  }
+
+  canToggle(){
+    return (this.dragMode || this.editMode || this.deleteMode)
+  }
+
+  toggleDragMode(){
+    // @ts-ignore
+    this.map.pm.toggleGlobalDragMode();
+    this.dragMode = !this.dragMode;
+
+  }
+
+  toggleEditMode(){
+    // @ts-ignore
+    this.map.pm.toggleGlobalEditMode();
+    this.editMode = !this.editMode;
+
+  }
+
+  toggleRemoveMode(){
+    // @ts-ignore
+    this.map.pm.toggleGlobalRemovalMode()
+    this.deleteMode =!this.deleteMode
+  }
+
+
+
+  setColorPolygon (){
+    // @ts-ignore
+    this.map.pm.setPathOptions({
+      color: this.pathColor,
+      fillColor: this.pathColor,
+      fillOpacity: 0.6,
+    });
   }
 
   loadBorder(){
     if(this.borderLayerGroup && this.map){
       this.borderLayerGroup.clearLayers();
-      let layer= new L.GeoJSON(this.borders);
+      // @ts-ignore
+      let layer= new L.GeoJSON(this.borders, { pmIgnore: true });
       this.borderLayerGroup.addLayer(layer);
       this.map.fitBounds(layer.getBounds());
     }
@@ -122,7 +219,8 @@ export class MapEditorComponent implements OnInit {
   loadShapes(){
     if(this.jsonLayerGroup && this.map){
       this.jsonLayerGroup.clearLayers()
-      this.jsonLayerGroup.addLayer(new L.GeoJSON(this.shapes));
+      // @ts-ignore
+      this.jsonLayerGroup.addLayer(new L.GeoJSON(this.shapes,{ pmIgnore: true }));
     }
   }
 
