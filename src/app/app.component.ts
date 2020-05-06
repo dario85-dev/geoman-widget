@@ -1,6 +1,5 @@
 import { Component } from '@angular/core';
 
-import {GeoJSON, GeoJsonObject} from "geojson";
 
 import {IWmsLayer} from "./iwms-layer";
 import {HttpClient} from "@angular/common/http";
@@ -14,7 +13,7 @@ import {HttpClient} from "@angular/common/http";
 export class AppComponent {
 
   constructor( private http: HttpClient) {
-    this.http.get('assets/combinado_201604_simplified.geojson').subscribe((json: GeoJSON) => {
+    this.http.get('assets/union_simplified.geojson').subscribe((json: any) => {
       this.jsonCombinado = json;
     });
   }
@@ -26,9 +25,9 @@ export class AppComponent {
 
   wmsLayers = [this.testWmsLayer]
 
-  jsonCombinado: GeoJSON;
+  jsonCombinado: any;
 
-  shapeInBolivia: GeoJSON = {
+  shapeInBolivia: any = {
     "type": "FeatureCollection",
     "features": [{
       "type": "Feature",
@@ -56,7 +55,7 @@ export class AppComponent {
       }
     }]
   };
-  border: GeoJSON = {
+  border: any = {
     "type": "FeatureCollection",
     "features": [
       {

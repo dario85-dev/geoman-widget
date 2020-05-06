@@ -4,7 +4,6 @@ import '@geoman-io/leaflet-geoman-free';
 import { v4 as uuidv4 } from "uuid";
 import intersect from '@turf/intersect'
 import union from '@turf/union'
-import {GeoJSON} from "geojson";
 import {IWmsLayer} from "../iwms-layer";
 
 
@@ -32,8 +31,8 @@ export class MapEditorComponent implements OnInit {
   deleteMode: boolean = false
 
 
-  @Input() borders: GeoJSON;
-  @Input() shapes: GeoJSON;
+  @Input() borders: any;
+  @Input() shapes: any;
   @Input() wmsLayers: IWmsLayer[];
 
   pathColor: string = '#FFA500';
