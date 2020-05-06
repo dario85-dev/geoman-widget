@@ -64,11 +64,11 @@ export class MapEditorComponent implements OnInit {
 
   setMap() {
     const baseLayer: L.TileLayer = L.tileLayer(
-      "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-      {
-        attribution:
-          '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-      }
+        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+        {
+          attribution:
+              '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        }
     );
     const viewerOptions: L.MapOptions = {
       layers: [baseLayer],
@@ -172,7 +172,10 @@ export class MapEditorComponent implements OnInit {
 
   toggleEditMode(){
     // @ts-ignore
-    this.map.pm.toggleGlobalEditMode();
+    this.map.pm.toggleGlobalEditMode({
+      allowSelfIntersection: false,
+      limitMarkersToCount: 20
+    });
     this.editMode = !this.editMode;
 
   }
@@ -190,13 +193,13 @@ export class MapEditorComponent implements OnInit {
       this.borderLayerGroup.clearLayers();
       // @ts-ignore
       let layer= new L.GeoJSON(this.borders, { pmIgnore: true ,
-      style: (feature)=>{
-        return {
-          color:'#000000',
-          fillOpacity:0,
-          weight: 1
-        }
-      }});
+        style: (feature)=>{
+          return {
+            color:'#000000',
+            fillOpacity:0,
+            weight: 1
+          }
+        }});
       this.borderLayerGroup.addLayer(layer);
       this.map.fitBounds(layer.getBounds());
     }
