@@ -3,6 +3,7 @@ import { Component } from '@angular/core';
 import {GeoJSON, GeoJsonObject} from "geojson";
 
 import {IWmsLayer} from "./iwms-layer";
+import {HttpClient} from "@angular/common/http";
 
 @Component({
   selector: 'app-root',
@@ -12,6 +13,11 @@ import {IWmsLayer} from "./iwms-layer";
 
 export class AppComponent {
 
+  constructor( private http: HttpClient) {
+    this.http.get('assets/combinado_201604_simplified.geojson').subscribe((json: GeoJSON) => {
+      this.jsonCombinado = json;
+    });
+  }
 
   testWmsLayer: IWmsLayer = {
     baseUrl: 'http://geoserver.cimafoundation.org/geoserver/wms',
@@ -19,6 +25,8 @@ export class AppComponent {
   }
 
   wmsLayers = [this.testWmsLayer]
+
+  jsonCombinado: GeoJSON;
 
   shapeInBolivia: GeoJSON = {
     "type": "FeatureCollection",

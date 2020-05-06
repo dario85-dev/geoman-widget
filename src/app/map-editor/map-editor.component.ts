@@ -3,6 +3,7 @@ import * as L from 'leaflet'
 import '@geoman-io/leaflet-geoman-free';
 import { v4 as uuidv4 } from "uuid";
 import intersect from '@turf/intersect'
+import union from '@turf/union'
 import {GeoJSON} from "geojson";
 import {IWmsLayer} from "../iwms-layer";
 
@@ -37,6 +38,13 @@ export class MapEditorComponent implements OnInit {
 
   pathColor: string = '#FFA500';
   inFillOpacity: string = '0.4';
+
+  dict = {
+    '1': '#ffff02',
+    '2': '#ffaa00',
+    '3': '#e70000',
+    '4': '#730000',
+  }
 
 
   drawControl;
@@ -182,7 +190,14 @@ export class MapEditorComponent implements OnInit {
     if(this.borderLayerGroup && this.map){
       this.borderLayerGroup.clearLayers();
       // @ts-ignore
-      let layer= new L.GeoJSON(this.borders, { pmIgnore: true });
+      let layer= new L.GeoJSON(this.borders, { pmIgnore: true ,
+      style: (feature)=>{
+        return {
+          color:'#000000',
+          fillOpacity:0,
+          weight: 1
+        }
+      }});
       this.borderLayerGroup.addLayer(layer);
       this.map.fitBounds(layer.getBounds());
     }
@@ -191,8 +206,20 @@ export class MapEditorComponent implements OnInit {
   loadShapes(){
     if(this.jsonLayerGroup && this.map){
       this.jsonLayerGroup.clearLayers()
-      // @ts-ignore
-      this.jsonLayerGroup.addLayer(new L.GeoJSON(this.shapes,{ pmIgnore: true }));
+
+      this.jsonLayerGroup.addLayer(new L.GeoJSON(this.shapes,{
+        // @ts-ignore
+        pmIgnore: false,
+        style: (feature) => {
+
+          return {
+            color: this.dict[feature.properties.niv.toString()],
+            fillColor: this.dict[feature.properties.niv.toString()],
+            fillOpacity: 1
+          }
+        }
+
+      }));
     }
   }
 
