@@ -1,10 +1,13 @@
-import {Component, Input, OnInit, AfterViewInit, SimpleChanges} from '@angular/core';
+import {Component, Input, OnInit, AfterViewInit, SimpleChanges, OnChanges, Output, EventEmitter} from '@angular/core';
 import * as L from 'leaflet'
 import '@geoman-io/leaflet-geoman-free';
 import { v4 as uuidv4 } from "uuid";
 import intersect from '@turf/intersect'
 import union from '@turf/union'
-import {IWmsLayer} from "../iwms-layer";
+import {GeoJSON, FeatureCollection, Polygon} from "geojson";
+import { IWmsLayer } from './../iwms-layer';
+
+
 
 
 
@@ -13,7 +16,7 @@ import {IWmsLayer} from "../iwms-layer";
   templateUrl: './map-editor.component.html',
   styleUrls: ['./map-editor.component.scss']
 })
-export class MapEditorComponent implements OnInit {
+export class MapEditorComponent implements OnInit, AfterViewInit, OnChanges {
 
   mapId: string;
   map: L.Map;
@@ -30,13 +33,15 @@ export class MapEditorComponent implements OnInit {
   dragMode: boolean = false
   deleteMode: boolean = false
 
-
-  @Input() borders: any;
-  @Input() shapes: any;
+  @Input() shapes: GeoJSON;
+  @Input() borders: FeatureCollection;
   @Input() wmsLayers: IWmsLayer[];
 
-  pathColor: string = '#FFA500';
-  inFillOpacity: string = '0.4';
+  private geojsonLayer: L.GeoJSON;
+  @Output() onModified = new EventEmitter<L.GeoJSON>();
+
+
+  inFillOpacity: string = '1';
 
   dict = {
     '1': '#ffff02',
@@ -44,6 +49,33 @@ export class MapEditorComponent implements OnInit {
     '3': '#e70000',
     '4': '#730000',
   }
+  attrToColor: string =  'niv';
+
+
+  palette = [
+    {
+      color: '#ffff00',
+      value: '1',
+      name: 'Siccità liv 1 ',
+    },
+    {
+      color: '#ffaa00',
+      value: '2',
+      name: 'Siccità liv 2 ',
+    },
+    {
+      color: '#e70000',
+      value: '3',
+      name: 'Siccità liv 3 ',
+    },
+    {
+      color: '#730000',
+      value: '4',
+      name: 'Siccità liv 4 ',
+    }
+    ];
+
+  choosedPalette =this.palette[0];
 
 
   drawControl;
@@ -62,13 +94,14 @@ export class MapEditorComponent implements OnInit {
   };
 
 
+
   setMap() {
     const baseLayer: L.TileLayer = L.tileLayer(
-        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-        {
-          attribution:
-              '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-        }
+      "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+      {
+        attribution:
+          '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      }
     );
     const viewerOptions: L.MapOptions = {
       layers: [baseLayer],
@@ -91,44 +124,51 @@ export class MapEditorComponent implements OnInit {
 
 
     this.map.on('pm:create', e => {
-      console.log(e)
+
+
       this.map.removeLayer(e.layer)
 
-      this.drawedLayerGroup.addLayer(e.layer);
+      //this.drawedLayerGroup.addLayer(e.layer);
+
+      let borderPolygon: Polygon = {
+        // @ts-ignore
+        coordinates: this.borders.features[0].geometry.coordinates,
+        type: "Polygon"
+      }
+
+      let intPolygon: Polygon = {
+        // @ts-ignore
+        coordinates: e.layer.toGeoJSON().geometry.coordinates,
+        type: "Polygon"
+      }
 
       // @ts-ignore
-      let poly1 = this.borders.features[0]
-      let poly2 = e.layer.toGeoJSON().features[0]
-      let poly3 = intersect(poly1,poly2)
+      const poly3 = intersect(borderPolygon,intPolygon)
 
-      // @ts-ignore
-      L.polygon(poly3, {color: 'red'}).addTo(this.map);
+      new L.GeoJSON(poly3, {
+        // @ts-ignore
+        style: (jsonFeature) => {
+          return {
+            color: this.choosedPalette.color,
+            fillColor: this.choosedPalette.color,
+            fillOpacity: this.inFillOpacity
+          }
+        }
+      }).addTo(this.drawedLayerGroup);
 
     });
-
-    this.map.on('pm:edit', e => {
-
-
-
-    });
-
   }
 
+
+
   constructor() {
-
     this.mapId = uuidv4();
-
   }
 
   ngOnInit() {
   }
 
-  ngOnChanges(changes: SimpleChanges) {
-    if(changes.hasOwnProperty('borders')) this.loadBorder();
-    if(changes.hasOwnProperty('shapes')) this.loadShapes();
-    if(changes.hasOwnProperty('wmsLayers')) this.loadWmss();
 
-  }
 
   ngAfterViewInit(){
     this.setMap();
@@ -136,19 +176,17 @@ export class MapEditorComponent implements OnInit {
     this.loadShapes();
     this.loadWmss();
     this.setDesignTool();
-
-
-
   }
 
   enableDrawer (){
     let options = {
+      snappable: true,
       templineStyle: {},
       hintlineStyle: {},
       pathOptions: {
         // add leaflet options for polylines/polygons
-        color: this.pathColor,
-        fillColor: this.pathColor,
+        color: this.choosedPalette.color,
+        fillColor: this.choosedPalette.color,
         fillOpacity: this.inFillOpacity,
       },
     };
@@ -173,8 +211,7 @@ export class MapEditorComponent implements OnInit {
   toggleEditMode(){
     // @ts-ignore
     this.map.pm.toggleGlobalEditMode({
-      allowSelfIntersection: false,
-      limitMarkersToCount: 20
+      limitMarkersToCount:10
     });
     this.editMode = !this.editMode;
 
@@ -189,7 +226,7 @@ export class MapEditorComponent implements OnInit {
 
 
   loadBorder(){
-    if(this.borderLayerGroup && this.map){
+    if(this.borders && this.borderLayerGroup && this.map){
       this.borderLayerGroup.clearLayers();
       // @ts-ignore
       let layer= new L.GeoJSON(this.borders, { pmIgnore: true ,
@@ -208,31 +245,43 @@ export class MapEditorComponent implements OnInit {
   loadShapes(){
     if(this.jsonLayerGroup && this.map){
       this.jsonLayerGroup.clearLayers()
-
-      this.jsonLayerGroup.addLayer(new L.GeoJSON(this.shapes,{
+      this.geojsonLayer = new L.GeoJSON(this.shapes,{
         // @ts-ignore
         pmIgnore: false,
         style: (feature) => {
-
+          let color = this.palette.filter((v)=> v.value == feature.properties[this.attrToColor].toString())[0].color
           return {
-            color: this.dict[feature.properties.niv.toString()],
-            fillColor: this.dict[feature.properties.niv.toString()],
+            color: color,
+            fillColor: color,
             fillOpacity: 1
           }
         }
+      });
+      this.jsonLayerGroup.addLayer(this.geojsonLayer);
 
-      }));
+      this.geojsonLayer.on('pm:edit', e => {
+        console.log('pm:edit', e);
+        this.onModified.emit(this.geojsonLayer);
+      });
     }
+
   }
 
   loadWmss(){
-    if(this.wmsLayerGroup && this.map){
+    if(this.wmsLayers && this.wmsLayerGroup && this.map){
       this.wmsLayerGroup.clearLayers()
       this.wmsLayers.map((layer: IWmsLayer)=>{
         this.wmsLayerGroup.addLayer(new L.TileLayer.WMS(layer.baseUrl, layer.options));
       });
 
     }
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    if(changes.hasOwnProperty('borders')) this.loadBorder();
+    if(changes.hasOwnProperty('shapes')) this.loadShapes();
+    if(changes.hasOwnProperty('wmsLayers')) this.loadWmss();
+
   }
 
 }

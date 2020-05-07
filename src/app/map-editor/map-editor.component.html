@@ -7,9 +7,10 @@
         <div class="input-group-prepend">
           <label class="input-group-text" for="inputGroupSelect01">Choose color</label>
         </div>
-        <select  class="custom-select" id="inputGroupSelect01"  [(ngModel)]="pathColor">
-          <option value="#FFA500" style="background-color: #FFA500" selected>#FFA500 - orange</option>
-          <option value="#FFFF00" style="background-color: #FFFF00" >FFFF00 - yellow</option>
+        <select  class="custom-select" id="inputGroupSelect01"  [(ngModel)]="choosedPalette">
+
+          <option *ngFor="let value of palette" [ngValue]="value" [ngStyle]="{backgroundColor: value.color}">{{value.name}}</option>
+
         </select>
       </div>
     </div>
@@ -25,9 +26,9 @@
       <div class="btn btn-info" (click)="enableDrawer()">Draw</div>
 
     </div>
-<!--    <div class="col-2">-->
-<!--      <div class="btn btn-warning" (click)="editPolygon()">Enable editing</div>-->
-<!--    </div>-->
+    <!--    <div class="col-2">-->
+    <!--      <div class="btn btn-warning" (click)="editPolygon()">Enable editing</div>-->
+    <!--    </div>-->
     <div class="col-2">
       <div *ngIf="!dragMode && !canToggle()" class="btn btn-warning" (click)="toggleDragMode()">Enable Drag</div>
       <div *ngIf="dragMode" class="btn btn-danger" (click)="toggleDragMode()">Disable Drag</div>
