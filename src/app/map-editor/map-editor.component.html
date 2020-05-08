@@ -89,26 +89,10 @@
           >
         </select>
       </div>
-
-      <!-- <div class="input-group mb-3">
-        <input
-          [(ngModel)]="inFillOpacity"
-          type="range"
-          id="opacity"
-          name="opacity"
-          min="0.1"
-          max="1"
-          step="0.1"
-          value="0.4"
-        />
-        <label for="opacity">Opacity</label>
-      </div> -->
     </div>
+    <div class="col-2"></div>
 
-    <!--    <div class="col-2">-->
-    <!--      <div class="btn btn-warning" (click)="editPolygon()">Enable editing</div>-->
-    <!--    </div>-->
-    <div class="col-2">
+    <div class="col-3">
       <div
         *ngIf="!dragMode && !canToggle()"
         class="btn btn-warning"
@@ -120,7 +104,7 @@
         Disable Drag
       </div>
     </div>
-    <div class="col-2">
+    <!-- <div class="col-2">
       <div
         *ngIf="!editMode && !canToggle()"
         class="btn btn-warning"
@@ -131,8 +115,8 @@
       <div *ngIf="editMode" class="btn btn-danger" (click)="toggleEditMode()">
         Disable Edit
       </div>
-    </div>
-    <div class="col-2">
+    </div> -->
+    <div class="col-3">
       <div
         *ngIf="!deleteMode && !canToggle()"
         class="btn btn-warning"
@@ -149,5 +133,4 @@
       </div>
     </div>
   </div>
-  <div class="row"></div>
 </div>
