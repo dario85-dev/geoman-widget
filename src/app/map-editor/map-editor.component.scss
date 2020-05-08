@@ -4,4 +4,9 @@
 }
 
 .layer-element {
+  background: #eee;
+  margin-top: 1em;
+  &--label {
+    font-size: 80%;
+  }
 }
