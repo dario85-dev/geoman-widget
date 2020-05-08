@@ -46,12 +46,6 @@ export class MapEditorComponent implements OnInit, AfterViewInit, OnChanges {
 
   inFillOpacity: string = "1";
 
-  dict = {
-    "1": "#ffff02",
-    "2": "#ffaa00",
-    "3": "#e70000",
-    "4": "#730000",
-  };
   attrToColor: string = "niv";
 
   palette = [
@@ -60,24 +54,28 @@ export class MapEditorComponent implements OnInit, AfterViewInit, OnChanges {
       color: "#ffff00",
       value: "1",
       name: "Siccità liv 1 ",
+      hide: false,
     },
     {
       opacity: "1",
       color: "#ffaa00",
       value: "2",
       name: "Siccità liv 2 ",
+      hide: false,
     },
     {
       opacity: "1",
       color: "#e70000",
       value: "3",
       name: "Siccità liv 3 ",
+      hide: false,
     },
     {
       opacity: "1",
       color: "#730000",
       value: "4",
       name: "Siccità liv 4 ",
+      hide: false,
     },
   ];
 
@@ -214,6 +212,21 @@ export class MapEditorComponent implements OnInit, AfterViewInit, OnChanges {
 
   setOpacity(p) {
     this.jsonLayerGroup.eachLayer((l) => {
+      // @ts-ignore
+      l.eachLayer((subl) => {
+        if (subl.feature.properties.niv == p.value) {
+          subl.setStyle({
+            fillOpacity: p.opacity,
+            opacity: p.opacity,
+          });
+        }
+      });
+    });
+  }
+
+  setHided(p) {
+    this.jsonLayerGroup.eachLayer((l) => {
+      p.opacity = p.hide ? 0 : 1;
       // @ts-ignore
       l.eachLayer((subl) => {
         if (subl.feature.properties.niv == p.value) {
