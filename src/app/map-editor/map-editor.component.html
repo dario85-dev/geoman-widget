@@ -6,7 +6,7 @@
     </div>
     <!-- layerlist -->
     <div class="col-3">
-      <div class="row mt-3" *ngFor="let item of palette">
+      <div class="row mt-3 layer-element" *ngFor="let item of palette">
         <!-- colonna nome e slider -->
         <div class="col">
           <div class="d-flex flex-column">
@@ -36,7 +36,7 @@
                   [(ngModel)]="item.editable"
                   (change)="setEditable(item)"
                 />
-                <label for="opacity">Editable</label>
+                <label class="mb-0" for="opacity">Editable</label>
               </div>
             </div>
             <div class="col">
@@ -46,7 +46,7 @@
                   [(ngModel)]="item.hide"
                   (change)="setHided(item)"
                 />
-                <label for="hide">hide</label>
+                <label class="mb-0" for="hide">hide</label>
               </div>
             </div>
             <div class="col">
@@ -56,7 +56,7 @@
                   [(ngModel)]="item.editable"
                   (change)="setEditable(item)"
                 />
-                <label for="opacity">??? </label>
+                <label class="mb-0" for="opacity">??? </label>
               </div>
             </div>
           </div>

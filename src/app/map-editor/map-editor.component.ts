@@ -121,6 +121,19 @@ export class MapEditorComponent implements OnInit, AfterViewInit, OnChanges {
     // @ts-ignore
     L.PM.initialize();
 
+    this.map.on("pm:edit", (e) => {
+      this.palette.map((p) => {
+        this.jsonLayerGroup.eachLayer((l) => {
+          // @ts-ignore
+          l.eachLayer((subl) => {
+            if (subl.feature.properties.niv == p.value) {
+              subl.bringToFront();
+            }
+          });
+        });
+      });
+    });
+
     this.map.on("pm:create", (e) => {
       this.map.removeLayer(e.layer);
 
@@ -142,6 +155,10 @@ export class MapEditorComponent implements OnInit, AfterViewInit, OnChanges {
       const poly3 = intersect(borderPolygon, intPolygon);
 
       new L.GeoJSON(poly3, {
+        onEachFeature: (features) => {
+          console.log("feature", features, this.choosedPalette);
+          features.properties.niv = this.choosedPalette.value;
+        },
         // @ts-ignore
         style: (jsonFeature) => {
           return {
@@ -150,7 +167,8 @@ export class MapEditorComponent implements OnInit, AfterViewInit, OnChanges {
             fillOpacity: this.inFillOpacity,
           };
         },
-      }).addTo(this.drawedLayerGroup);
+      }).addTo(this.jsonLayerGroup);
+      // }).addTo(this.drawedLayerGroup);
     });
   }
 
@@ -275,9 +293,10 @@ export class MapEditorComponent implements OnInit, AfterViewInit, OnChanges {
   }
 
   loadShapes() {
-    if (this.jsonLayerGroup && this.map) {
+    if (this.jsonLayerGroup && this.map && this.shapes) {
       this.jsonLayerGroup.clearLayers();
-      this.geojsonLayer = new L.GeoJSON(this.shapes, {
+      // @ts-ignore
+      this.geojsonLayer = new L.GeoJSON(this.shapes.features, {
         // @ts-ignore
         pmIgnore: false,
         style: (feature) => {
@@ -295,9 +314,23 @@ export class MapEditorComponent implements OnInit, AfterViewInit, OnChanges {
 
       this.geojsonLayer.on("pm:edit", (e) => {
         console.log("pm:edit", e);
+        this.orderLayerByNiv();
         this.onModified.emit(this.geojsonLayer);
       });
     }
+  }
+
+  orderLayerByNiv() {
+    this.palette.map((p) => {
+      this.jsonLayerGroup.eachLayer((l) => {
+        // @ts-ignore
+        l.eachLayer((subl) => {
+          if (subl.feature.properties.niv == p.value) {
+            subl.bringToFront();
+          }
+        });
+      });
+    });
   }
 
   loadWmss() {
