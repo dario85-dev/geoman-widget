@@ -1,23 +1,27 @@
-import {Component, Input, OnInit, AfterViewInit, SimpleChanges, OnChanges, Output, EventEmitter} from '@angular/core';
-import * as L from 'leaflet'
-import '@geoman-io/leaflet-geoman-free';
+import {
+  Component,
+  Input,
+  OnInit,
+  AfterViewInit,
+  SimpleChanges,
+  OnChanges,
+  Output,
+  EventEmitter,
+} from "@angular/core";
+import * as L from "leaflet";
+import "@geoman-io/leaflet-geoman-free";
 import { v4 as uuidv4 } from "uuid";
-import intersect from '@turf/intersect'
-import union from '@turf/union'
-import {GeoJSON, FeatureCollection, Polygon} from "geojson";
-import { IWmsLayer } from './../iwms-layer';
-
-
-
-
+import intersect from "@turf/intersect";
+import union from "@turf/union";
+import { GeoJSON, FeatureCollection, Polygon } from "geojson";
+import { IWmsLayer } from "./../iwms-layer";
 
 @Component({
-  selector: 'app-map-editor',
-  templateUrl: './map-editor.component.html',
-  styleUrls: ['./map-editor.component.scss']
+  selector: "app-map-editor",
+  templateUrl: "./map-editor.component.html",
+  styleUrls: ["./map-editor.component.scss"],
 })
 export class MapEditorComponent implements OnInit, AfterViewInit, OnChanges {
-
   mapId: string;
   map: L.Map;
 
@@ -30,8 +34,8 @@ export class MapEditorComponent implements OnInit, AfterViewInit, OnChanges {
   layerList: L.Layer[] = [];
 
   editMode: boolean = false;
-  dragMode: boolean = false
-  deleteMode: boolean = false
+  dragMode: boolean = false;
+  deleteMode: boolean = false;
 
   @Input() shapes: GeoJSON;
   @Input() borders: FeatureCollection;
@@ -40,43 +44,44 @@ export class MapEditorComponent implements OnInit, AfterViewInit, OnChanges {
   private geojsonLayer: L.GeoJSON;
   @Output() onModified = new EventEmitter<L.GeoJSON>();
 
-
-  inFillOpacity: string = '1';
+  inFillOpacity: string = "1";
 
   dict = {
-    '1': '#ffff02',
-    '2': '#ffaa00',
-    '3': '#e70000',
-    '4': '#730000',
-  }
-  attrToColor: string =  'niv';
-
+    "1": "#ffff02",
+    "2": "#ffaa00",
+    "3": "#e70000",
+    "4": "#730000",
+  };
+  attrToColor: string = "niv";
 
   palette = [
     {
-      color: '#ffff00',
-      value: '1',
-      name: 'Siccità liv 1 ',
+      opacity: "1",
+      color: "#ffff00",
+      value: "1",
+      name: "Siccità liv 1 ",
     },
     {
-      color: '#ffaa00',
-      value: '2',
-      name: 'Siccità liv 2 ',
+      opacity: "1",
+      color: "#ffaa00",
+      value: "2",
+      name: "Siccità liv 2 ",
     },
     {
-      color: '#e70000',
-      value: '3',
-      name: 'Siccità liv 3 ',
+      opacity: "1",
+      color: "#e70000",
+      value: "3",
+      name: "Siccità liv 3 ",
     },
     {
-      color: '#730000',
-      value: '4',
-      name: 'Siccità liv 4 ',
-    }
-    ];
+      opacity: "1",
+      color: "#730000",
+      value: "4",
+      name: "Siccità liv 4 ",
+    },
+  ];
 
-  choosedPalette =this.palette[0];
-
+  choosedPalette = this.palette[0];
 
   drawControl;
 
@@ -90,10 +95,8 @@ export class MapEditorComponent implements OnInit, AfterViewInit, OnChanges {
     drawCircle: false,
     cutPolygon: false,
     pinningOption: false,
-    snappingOption: false
+    snappingOption: false,
   };
-
-
 
   setMap() {
     const baseLayer: L.TileLayer = L.tileLayer(
@@ -113,37 +116,32 @@ export class MapEditorComponent implements OnInit, AfterViewInit, OnChanges {
     this.wmsLayerGroup.addTo(this.map);
     this.jsonLayerGroup.addTo(this.map);
     this.borderLayerGroup.addTo(this.map);
-    this.drawedLayerGroup.addTo(this.map)
-
-
+    this.drawedLayerGroup.addTo(this.map);
   }
 
-  setDesignTool(){
+  setDesignTool() {
     // @ts-ignore
     L.PM.initialize();
 
-
-    this.map.on('pm:create', e => {
-
-
-      this.map.removeLayer(e.layer)
+    this.map.on("pm:create", (e) => {
+      this.map.removeLayer(e.layer);
 
       //this.drawedLayerGroup.addLayer(e.layer);
 
       let borderPolygon: Polygon = {
         // @ts-ignore
         coordinates: this.borders.features[0].geometry.coordinates,
-        type: "Polygon"
-      }
+        type: "Polygon",
+      };
 
       let intPolygon: Polygon = {
         // @ts-ignore
         coordinates: e.layer.toGeoJSON().geometry.coordinates,
-        type: "Polygon"
-      }
+        type: "Polygon",
+      };
 
       // @ts-ignore
-      const poly3 = intersect(borderPolygon,intPolygon)
+      const poly3 = intersect(borderPolygon, intPolygon);
 
       new L.GeoJSON(poly3, {
         // @ts-ignore
@@ -151,26 +149,20 @@ export class MapEditorComponent implements OnInit, AfterViewInit, OnChanges {
           return {
             color: this.choosedPalette.color,
             fillColor: this.choosedPalette.color,
-            fillOpacity: this.inFillOpacity
-          }
-        }
+            fillOpacity: this.inFillOpacity,
+          };
+        },
       }).addTo(this.drawedLayerGroup);
-
     });
   }
-
-
 
   constructor() {
     this.mapId = uuidv4();
   }
 
-  ngOnInit() {
-  }
+  ngOnInit() {}
 
-
-
-  ngAfterViewInit(){
+  ngAfterViewInit() {
     this.setMap();
     this.loadBorder();
     this.loadShapes();
@@ -178,7 +170,7 @@ export class MapEditorComponent implements OnInit, AfterViewInit, OnChanges {
     this.setDesignTool();
   }
 
-  enableDrawer (){
+  enableDrawer() {
     let options = {
       snappable: true,
       templineStyle: {},
@@ -192,96 +184,121 @@ export class MapEditorComponent implements OnInit, AfterViewInit, OnChanges {
     };
 
     // @ts-ignore
-    this.map.pm.enableDraw('Polygon', options);
+    this.map.pm.enableDraw("Polygon", options);
   }
 
-
-
-  canToggle(){
-    return (this.dragMode || this.editMode || this.deleteMode)
+  canToggle() {
+    return this.dragMode || this.editMode || this.deleteMode;
   }
 
-  toggleDragMode(){
+  toggleDragMode() {
     // @ts-ignore
     this.map.pm.toggleGlobalDragMode();
     this.dragMode = !this.dragMode;
-
   }
 
-  toggleEditMode(){
+  toggleEditMode() {
     // @ts-ignore
     this.map.pm.toggleGlobalEditMode({
-      limitMarkersToCount:10
+      // @ts-ignore
+      limitMarkersToCount: 10,
     });
     this.editMode = !this.editMode;
-
   }
 
-  toggleRemoveMode(){
+  toggleRemoveMode() {
     // @ts-ignore
-    this.map.pm.toggleGlobalRemovalMode()
-    this.deleteMode =!this.deleteMode
+    this.map.pm.toggleGlobalRemovalMode();
+    this.deleteMode = !this.deleteMode;
   }
 
+  setOpacity(p) {
+    this.jsonLayerGroup.eachLayer((l) => {
+      l.eachLayer((subl) => {
+        if (subl.feature.properties.niv == p.value) {
+          subl.setStyle({
+            fillOpacity: p.opacity,
+            opacity: p.opacity,
+          });
+        }
+      });
+    });
+  }
 
+  setEditable(p) {
+    this.jsonLayerGroup.eachLayer((l) => {
+      l.eachLayer((subl) => {
+        if (subl.feature.properties.niv == p.value && p.editable) {
+          subl.pm.enable({
+            limitMarkersToCount: 10,
+          });
+        } else {
+          subl.pm.disable();
+        }
+      });
+    });
+  }
 
-  loadBorder(){
-    if(this.borders && this.borderLayerGroup && this.map){
+  loadBorder() {
+    if (this.borders && this.borderLayerGroup && this.map) {
       this.borderLayerGroup.clearLayers();
       // @ts-ignore
-      let layer= new L.GeoJSON(this.borders, { pmIgnore: true ,
-        style: (feature)=>{
+      let layer = new L.GeoJSON(this.borders, {
+        // @ts-ignore
+        pmIgnore: true,
+        style: (feature) => {
           return {
-            color:'#000000',
-            fillOpacity:0,
-            weight: 1
-          }
-        }});
+            color: "#000000",
+            fillOpacity: 0,
+            weight: 1,
+          };
+        },
+      });
       this.borderLayerGroup.addLayer(layer);
       this.map.fitBounds(layer.getBounds());
     }
   }
 
-  loadShapes(){
-    if(this.jsonLayerGroup && this.map){
-      this.jsonLayerGroup.clearLayers()
-      this.geojsonLayer = new L.GeoJSON(this.shapes,{
+  loadShapes() {
+    if (this.jsonLayerGroup && this.map) {
+      this.jsonLayerGroup.clearLayers();
+      this.geojsonLayer = new L.GeoJSON(this.shapes, {
         // @ts-ignore
         pmIgnore: false,
         style: (feature) => {
-          let color = this.palette.filter((v)=> v.value == feature.properties[this.attrToColor].toString())[0].color
+          let color = this.palette.filter(
+            (v) => v.value == feature.properties[this.attrToColor].toString()
+          )[0].color;
           return {
             color: color,
             fillColor: color,
-            fillOpacity: 1
-          }
-        }
+            fillOpacity: 1,
+          };
+        },
       });
       this.jsonLayerGroup.addLayer(this.geojsonLayer);
 
-      this.geojsonLayer.on('pm:edit', e => {
-        console.log('pm:edit', e);
+      this.geojsonLayer.on("pm:edit", (e) => {
+        console.log("pm:edit", e);
         this.onModified.emit(this.geojsonLayer);
       });
     }
-
   }
 
-  loadWmss(){
-    if(this.wmsLayers && this.wmsLayerGroup && this.map){
-      this.wmsLayerGroup.clearLayers()
-      this.wmsLayers.map((layer: IWmsLayer)=>{
-        this.wmsLayerGroup.addLayer(new L.TileLayer.WMS(layer.baseUrl, layer.options));
+  loadWmss() {
+    if (this.wmsLayers && this.wmsLayerGroup && this.map) {
+      this.wmsLayerGroup.clearLayers();
+      this.wmsLayers.map((layer: IWmsLayer) => {
+        this.wmsLayerGroup.addLayer(
+          new L.TileLayer.WMS(layer.baseUrl, layer.options)
+        );
       });
-
     }
   }
 
   ngOnChanges(changes: SimpleChanges) {
-    if(changes.hasOwnProperty('borders')) this.loadBorder();
-    if(changes.hasOwnProperty('shapes')) this.loadShapes();
-    if(changes.hasOwnProperty('wmsLayers')) this.loadWmss();
-
+    if (changes.hasOwnProperty("borders")) this.loadBorder();
+    if (changes.hasOwnProperty("shapes")) this.loadShapes();
+    if (changes.hasOwnProperty("wmsLayers")) this.loadWmss();
   }
-
 }

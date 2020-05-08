@@ -1,51 +1,132 @@
-
-<div class="map" [id]="mapId"></div>
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-10">
+      <div class="map" [id]="mapId"></div>
+    </div>
+    <div class="col-2">
+      <div class="row" *ngFor="let item of palette">
+        <div class="row">
+          <div class="col-12">
+            {{ item.name }}
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-12">
+            <div class="input-group mb-3">
+              <input
+                [(ngModel)]="item.opacity"
+                (change)="setOpacity(item)"
+                type="range"
+                id="opacity"
+                name="opacity"
+                min="0.1"
+                max="1"
+                step="0.1"
+              />
+              <label for="opacity">Opacity</label>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-12">
+            <div class="input-group mb-3">
+              <input
+                type="checkbox"
+                [(ngModel)]="item.editable"
+                (change)="setEditable(item)"
+              />
+              <label for="opacity">Editable</label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 <div class="container-fluid">
   <div class="row">
     <div class="col-3">
       <div class="input-group mb-3">
         <div class="input-group-prepend">
-          <label class="input-group-text" for="inputGroupSelect01">Choose color</label>
+          <label class="input-group-text" for="inputGroupSelect01"
+            >Choose color</label
+          >
         </div>
-        <select  class="custom-select" id="inputGroupSelect01"  [(ngModel)]="choosedPalette">
-
-          <option *ngFor="let value of palette" [ngValue]="value" [ngStyle]="{backgroundColor: value.color}">{{value.name}}</option>
-
+        <select
+          class="custom-select"
+          id="inputGroupSelect01"
+          [(ngModel)]="choosedPalette"
+        >
+          <option
+            *ngFor="let value of palette"
+            [ngValue]="value"
+            [ngStyle]="{ backgroundColor: value.color }"
+            >{{ value.name }}</option
+          >
         </select>
       </div>
     </div>
     <div class="col-2">
       <div class="input-group mb-3">
-
-        <input [(ngModel)]="inFillOpacity" type="range" id="opacity" name="opacity"
-               min="0.1" max="1" step="0.1" value="0.4">
+        <input
+          [(ngModel)]="inFillOpacity"
+          type="range"
+          id="opacity"
+          name="opacity"
+          min="0.1"
+          max="1"
+          step="0.1"
+          value="0.4"
+        />
         <label for="opacity">Opacity</label>
       </div>
     </div>
     <div class="col-1">
       <div class="btn btn-info" (click)="enableDrawer()">Draw</div>
-
     </div>
     <!--    <div class="col-2">-->
     <!--      <div class="btn btn-warning" (click)="editPolygon()">Enable editing</div>-->
     <!--    </div>-->
     <div class="col-2">
-      <div *ngIf="!dragMode && !canToggle()" class="btn btn-warning" (click)="toggleDragMode()">Enable Drag</div>
-      <div *ngIf="dragMode" class="btn btn-danger" (click)="toggleDragMode()">Disable Drag</div>
+      <div
+        *ngIf="!dragMode && !canToggle()"
+        class="btn btn-warning"
+        (click)="toggleDragMode()"
+      >
+        Enable Drag
+      </div>
+      <div *ngIf="dragMode" class="btn btn-danger" (click)="toggleDragMode()">
+        Disable Drag
+      </div>
     </div>
     <div class="col-2">
-      <div *ngIf="!editMode && !canToggle()" class="btn btn-warning" (click)="toggleEditMode()">Enable Edit</div>
-      <div *ngIf="editMode" class="btn btn-danger" (click)="toggleEditMode()">Disable Edit</div>
+      <div
+        *ngIf="!editMode && !canToggle()"
+        class="btn btn-warning"
+        (click)="toggleEditMode()"
+      >
+        Enable Edit
+      </div>
+      <div *ngIf="editMode" class="btn btn-danger" (click)="toggleEditMode()">
+        Disable Edit
+      </div>
     </div>
     <div class="col-2">
-      <div *ngIf="!deleteMode &&  !canToggle()" class="btn btn-warning" (click)="toggleRemoveMode()">Enable Delete mode</div>
-      <div *ngIf="deleteMode" class="btn btn-danger" (click)="toggleRemoveMode()">Disable Delete mode</div>
+      <div
+        *ngIf="!deleteMode && !canToggle()"
+        class="btn btn-warning"
+        (click)="toggleRemoveMode()"
+      >
+        Enable Delete mode
+      </div>
+      <div
+        *ngIf="deleteMode"
+        class="btn btn-danger"
+        (click)="toggleRemoveMode()"
+      >
+        Disable Delete mode
+      </div>
     </div>
-
   </div>
-  <div class="row">
-
-  </div>
+  <div class="row"></div>
 </div>
-
-
