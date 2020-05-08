@@ -214,6 +214,7 @@ export class MapEditorComponent implements OnInit, AfterViewInit, OnChanges {
 
   setOpacity(p) {
     this.jsonLayerGroup.eachLayer((l) => {
+      // @ts-ignore
       l.eachLayer((subl) => {
         if (subl.feature.properties.niv == p.value) {
           subl.setStyle({
@@ -227,6 +228,7 @@ export class MapEditorComponent implements OnInit, AfterViewInit, OnChanges {
 
   setEditable(p) {
     this.jsonLayerGroup.eachLayer((l) => {
+      // @ts-ignore
       l.eachLayer((subl) => {
         if (subl.feature.properties.niv == p.value && p.editable) {
           subl.pm.enable({
